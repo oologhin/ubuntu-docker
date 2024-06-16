@@ -31,7 +31,6 @@ docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ubun
 Edit your ~/.ssh/config file with the correct IP address:
 
 ```sh
-Copy code
 Host my-ubuntu-container
     HostName <container-ip-address>
     Port 2222
