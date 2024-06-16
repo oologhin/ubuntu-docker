@@ -1,29 +1,31 @@
 # Use the official Ubuntu image as a base
 FROM ubuntu:latest
 
-# Install necessary packages
+# Install necessary packages including openssh-server
 RUN apt-get update && apt-get install -y \
     sudo \
     curl \
     wget \
     git \
     build-essential \
-    software-properties-common
+    software-properties-common \
+    openssh-server
 
-# Install any additional packages you need
-# RUN apt-get install -y <additional-packages>
+# Configure SSH server
+RUN mkdir /var/run/sshd && \
+    echo 'root:password' | chpasswd && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config && \
+    mkdir -p /root/.ssh && chmod 700 /root/.ssh
+
+# Expose SSH port
+EXPOSE 2222
 
 # Set up a non-root user (optional)
 RUN useradd -ms /bin/bash devuser && echo 'devuser:password' | chpasswd && adduser devuser sudo
 
-# Set the default user
-USER devuser
+# Set the default user back to root to start SSH
+USER root
 
-# Set the working directory
-WORKDIR /home/devuser
-
-# Expose any ports if necessary
-# EXPOSE <port-number>
-
-# Command to run when starting the container
-CMD ["bash"]
+# Start SSH service and keep the container running
+CMD service ssh start && tail -f /dev/null
